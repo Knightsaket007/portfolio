@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saket Sourav — Fullstack Developer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { display: ['Syne','sans-serif'], body: ['Geist','sans-serif'], mono: ['JetBrains Mono','monospace'] } } }
+    }
+  </script>
+
+  <style>
+    :root {
+      --ink:         #0f0f0e;
+      --ink-2:       #3a3a36;
+      --ink-muted:   #72726b;
+      --ink-faint:   #b8b8b0;
+      --surface:     #fafaf8;
+      --surface-2:   #f2f1ee;
+      --surface-3:   #eae9e4;
+      --border:      #e0deda;
+      --border-2:    #cccac4;
+      --accent:      #1c6b47;
+      --accent-soft: #dcf0e7;
+      --accent-dim:  rgba(28,107,71,0.12);
+    }
+    .dark {
+      --ink:         #f0ede8;
+      --ink-2:       #c8c4bc;
+      --ink-muted:   #8a8a82;
+      --ink-faint:   #4a4a44;
+      --surface:     #0c0c0b;
+      --surface-2:   #141412;
+      --surface-3:   #1c1c19;
+      --border:      #242420;
+      --border-2:    #323230;
+      --accent:      #3dba7e;
+      --accent-soft: #0f2b1e;
+      --accent-dim:  rgba(61,186,126,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-family: 'Geist', system-ui, sans-serif; }
+    body {
+      background: var(--surface);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.35s, color 0.35s;
+      overflow-x: hidden;
+    }
+
+    /* grain */
+    body::after {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
+      opacity:0.022;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ── NAVBAR ── */
+    #navbar {
+      position:fixed; top:0; left:0; right:0; z-index:100; height:52px;
+      display:flex; align-items:center;
+      backdrop-filter:blur(20px) saturate(160%);
+      -webkit-backdrop-filter:blur(20px) saturate(160%);
+      background:rgba(250,250,248,0.82);
+      border-bottom:1px solid var(--border);
+      transition:background 0.35s, border-color 0.35s;
+    }
+    .dark #navbar { background:rgba(12,12,11,0.88); }
+    .nav-inner { max-width:1080px; width:100%; margin:0 auto; padding:0 24px; display:flex; align-items:center; justify-content:space-between; }
+    .nav-logo { font-family:'Syne',sans-serif; font-weight:700; font-size:0.9375rem; color:var(--ink); text-decoration:none; letter-spacing:-0.02em; }
+    .nav-links { display:flex; align-items:center; gap:28px; }
+    .nav-link { font-family:'Geist',sans-serif; font-size:0.8rem; font-weight:500; color:var(--ink-muted); text-decoration:none; letter-spacing:0.01em; transition:color 0.2s; }
+    .nav-link:hover { color:var(--ink); }
+    .nav-actions { display:flex; align-items:center; gap:10px; }
+
+    #theme-toggle { width:30px; height:30px; border:1px solid var(--border); border-radius:7px; background:var(--surface-2); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color 0.2s; color:var(--ink-muted); }
+    #theme-toggle:hover { border-color:var(--border-2); color:var(--ink); }
+    #hamburger { display:none; background:none; border:none; cursor:pointer; color:var(--ink); padding:4px; }
+
+    @media (max-width:768px) { .nav-links{display:none;} #hamburger{display:flex;} }
+
+    /* mobile overlay */
+    #mobile-menu { display:none; position:fixed; inset:0; z-index:200; background:var(--surface); flex-direction:column; align-items:center; justify-content:center; gap:36px; }
+    #mobile-menu.open { display:flex; }
+    #mobile-menu .nav-link { font-size:1.1rem; }
+    #close-menu { position:absolute; top:16px; right:20px; background:none; border:none; cursor:pointer; color:var(--ink); }
+
+    /* ── HERO ── */
+    #hero { min-height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 24px 60px; position:relative; overflow:hidden; }
+    .hero-dots { position:absolute; inset:0; pointer-events:none; background-image:radial-gradient(circle,var(--border) 1px,transparent 1px); background-size:28px 28px; mask-image:radial-gradient(ellipse 85% 75% at 50% 40%,black 30%,transparent 100%); -webkit-mask-image:radial-gradient(ellipse 85% 75% at 50% 40%,black 30%,transparent 100%); opacity:0.7; }
+    .blob { position:absolute; border-radius:50%; filter:blur(90px); pointer-events:none; }
+    .blob-1 { width:480px; height:480px; background:radial-gradient(circle,rgba(28,107,71,0.13) 0%,transparent 70%); top:-100px; left:-80px; animation:float1 10s ease-in-out infinite; }
+    .blob-2 { width:360px; height:360px; background:radial-gradient(circle,rgba(176,125,58,0.08) 0%,transparent 70%); bottom:0; right:-60px; animation:float2 12s ease-in-out infinite; }
+    .blob-3 { width:280px; height:280px; background:radial-gradient(circle,rgba(28,107,71,0.08) 0%,transparent 70%); top:40%; left:60%; animation:float1 9s ease-in-out infinite reverse; }
+    .dark .blob-1 { background:radial-gradient(circle,rgba(61,186,126,0.10) 0%,transparent 70%); }
+    .dark .blob-2 { background:radial-gradient(circle,rgba(212,160,86,0.07) 0%,transparent 70%); }
+    @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,25px)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-25px,-20px)} }
+
+    .hero-content { position:relative; z-index:1; text-align:center; max-width:700px; }
+
+    .badge { display:inline-flex; align-items:center; gap:7px; padding:5px 14px; border-radius:9999px; border:1px solid var(--border); background:var(--surface-2); font-family:'Geist',sans-serif; font-size:0.7375rem; font-weight:500; color:var(--ink-muted); margin-bottom:28px; }
+    .badge-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+    .hero-name { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(2.8rem,8vw,5rem); letter-spacing:-0.045em; line-height:0.95; color:var(--ink); margin-bottom:14px; }
+    .hero-name .hi { color:var(--accent); }
+    .hero-role { font-family:'JetBrains Mono',monospace; font-size:0.68rem; font-weight:500; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:22px; }
+    .hero-tagline { font-family:'Geist',sans-serif; font-size:1.0625rem; font-weight:300; color:var(--ink-muted); line-height:1.65; margin-bottom:36px; max-width:440px; margin-left:auto; margin-right:auto; }
+
+    .btn-p { display:inline-flex; align-items:center; gap:7px; padding:10px 22px; border-radius:9px; background:var(--ink); color:var(--surface); font-family:'Geist',sans-serif; font-size:0.8125rem; font-weight:500; text-decoration:none; border:1px solid transparent; transition:opacity 0.2s,transform 0.18s; }
+    .btn-p:hover { opacity:0.82; transform:translateY(-2px); }
+    .btn-g { display:inline-flex; align-items:center; gap:7px; padding:10px 22px; border-radius:9px; background:transparent; color:var(--ink); font-family:'Geist',sans-serif; font-size:0.8125rem; font-weight:500; text-decoration:none; border:1px solid var(--border); transition:border-color 0.2s,background 0.2s,transform 0.18s; }
+    .btn-g:hover { border-color:var(--border-2); background:var(--surface-2); transform:translateY(-2px); }
+
+    .scroll-cue { position:absolute; bottom:28px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:5px; animation:scrollfade 2.2s ease-in-out infinite; }
+    @keyframes scrollfade { 0%,100%{opacity:1;transform:translateX(-50%) translateY(0)} 50%{opacity:0.4;transform:translateX(-50%) translateY(6px)} }
+
+    /* ── LAYOUT ── */
+    section { position:relative; z-index:1; }
+    .wrap { max-width:1080px; margin:0 auto; padding:68px 24px; }
+    .sep { border:none; border-top:1px solid var(--border); max-width:1080px; margin:0 auto; }
+
+    /* eyebrow */
+    .eyebrow { font-family:'JetBrains Mono',monospace; font-size:0.65rem; font-weight:500; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+    .eyebrow::after { content:''; flex:1; max-width:32px; height:1px; background:var(--accent); opacity:0.4; }
+    .stitle { font-family:'Syne',sans-serif; font-weight:700; font-size:clamp(1.5rem,3.5vw,2rem); letter-spacing:-0.03em; color:var(--ink); line-height:1.15; margin-bottom:6px; }
+    .ssub { font-family:'Geist',sans-serif; font-size:0.875rem; font-weight:300; color:var(--ink-muted); line-height:1.6; }
+
+    /* ── ABOUT ── */
+    .about-grid { display:grid; grid-template-columns:1fr 1.6fr; gap:56px; align-items:start; }
+    @media (max-width:768px) { .about-grid{grid-template-columns:1fr;gap:28px;} }
+    .about-lead { font-family:'Syne',sans-serif; font-size:1.125rem; font-weight:500; letter-spacing:-0.02em; line-height:1.5; color:var(--ink); margin-bottom:14px; }
+    .about-body { font-family:'Geist',sans-serif; font-size:0.875rem; font-weight:300; line-height:1.75; color:var(--ink-muted); margin-bottom:12px; }
+    .stat-row { display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; }
+    .stat-card { flex:1; min-width:84px; padding:14px 16px; border-radius:12px; border:1px solid var(--border); background:var(--surface-2); }
+    .stat-num { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; letter-spacing:-0.04em; color:var(--ink); line-height:1; }
+    .stat-label { font-family:'Geist',sans-serif; font-size:0.68rem; font-weight:400; color:var(--ink-muted); margin-top:4px; }
+
+    /* ── SKILLS ── */
+    .skills-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(255px,1fr)); gap:14px; margin-top:36px; }
+    .skill-group { padding:20px 22px; border-radius:14px; border:1px solid var(--border); background:var(--surface-2); transition:border-color 0.25s,transform 0.25s; }
+    .skill-group:hover { border-color:var(--border-2); transform:translateY(-2px); }
+    .sg-name { font-family:'JetBrains Mono',monospace; font-size:0.63rem; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+    .pill-row { display:flex; flex-wrap:wrap; gap:6px; }
+    .pill { padding:3px 10px; border-radius:9999px; border:1px solid var(--border); font-family:'Geist',sans-serif; font-size:0.72rem; font-weight:400; color:var(--ink-2); background:var(--surface); white-space:nowrap; transition:border-color 0.2s,color 0.2s,background 0.2s; }
+    .pill:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+
+    /* ── PROJECTS ── */
+    .proj-cat { font-family:'JetBrains Mono',monospace; font-size:0.63rem; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:16px; margin-top:44px; display:flex; align-items:center; gap:10px; }
+    .proj-cat::before { content:''; width:20px; height:1px; background:var(--border-2); }
+    .proj-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(295px,1fr)); gap:16px; }
+    .pcard { border-radius:14px; border:1px solid var(--border); background:var(--surface-2); overflow:hidden; transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s; }
+    .pcard:hover { border-color:var(--border-2); transform:translateY(-4px); box-shadow:0 16px 48px rgba(0,0,0,0.07); }
+    .dark .pcard:hover { box-shadow:0 16px 48px rgba(0,0,0,0.45); }
+    .pthumb { position:relative; aspect-ratio:16/9; background:var(--surface-3); overflow:hidden; }
+    .pthumb img { width:100%; height:100%; object-fit:cover; object-position:top; transition:transform 0.5s; display:block; }
+    .pcard:hover .pthumb img { transform:scale(1.05); }
+    .pthumb-empty { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+    .ptag { position:absolute; top:10px; left:10px; font-family:'JetBrains Mono',monospace; font-size:0.58rem; font-weight:500; letter-spacing:0.06em; padding:3px 8px; border-radius:9999px; background:rgba(0,0,0,0.55); color:#fff; backdrop-filter:blur(4px); }
+    .ptag.wip { background:rgba(28,107,71,0.9); }
+    .pbody { padding:18px 20px 20px; }
+    .ptitle { font-family:'Syne',sans-serif; font-size:0.9375rem; font-weight:600; letter-spacing:-0.02em; color:var(--ink); margin-bottom:6px; }
+    .pdesc { font-family:'Geist',sans-serif; font-size:0.775rem; font-weight:300; color:var(--ink-muted); line-height:1.65; margin-bottom:14px; }
+    .plink { display:inline-flex; align-items:center; gap:5px; font-family:'Geist',sans-serif; font-size:0.74rem; font-weight:500; color:var(--accent); text-decoration:none; border:1px solid var(--accent-dim); background:var(--accent-soft); padding:5px 12px; border-radius:7px; transition:background 0.2s,border-color 0.2s; }
+    .plink:hover { background:var(--accent-dim); border-color:var(--accent); }
+    .plink-g { display:inline-flex; align-items:center; gap:5px; font-family:'Geist',sans-serif; font-size:0.74rem; font-weight:500; color:var(--ink-muted); text-decoration:none; border:1px solid var(--border); background:transparent; padding:5px 12px; border-radius:7px; margin-left:6px; transition:border-color 0.2s,color 0.2s,background 0.2s; }
+    .plink-g:hover { border-color:var(--border-2); color:var(--ink); background:var(--surface-3); }
+
+    /* ── EXPERIENCE ── */
+    .exp-list { display:flex; flex-direction:column; margin-top:36px; }
+    .exp-item { display:grid; grid-template-columns:auto 1fr; gap:0 22px; }
+    .exp-left { display:flex; flex-direction:column; align-items:center; padding-top:3px; }
+    .exp-dot { width:10px; height:10px; border-radius:50%; border:2px solid var(--accent); background:var(--surface); flex-shrink:0; position:relative; z-index:1; margin-top:2px; }
+    .exp-line { width:1px; flex:1; background:var(--border); margin:6px 0; min-height:36px; }
+    .exp-item:last-child .exp-line { display:none; }
+    .exp-right { padding-bottom:32px; }
+    .exp-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:7px; }
+    .exp-title { font-family:'Syne',sans-serif; font-size:0.9375rem; font-weight:600; letter-spacing:-0.02em; color:var(--ink); }
+    .exp-date { font-family:'JetBrains Mono',monospace; font-size:0.63rem; color:var(--ink-faint); white-space:nowrap; padding-top:3px; }
+    .exp-desc { font-family:'Geist',sans-serif; font-size:0.8125rem; font-weight:300; color:var(--ink-muted); line-height:1.7; }
+
+    /* ── CONTACT ── */
+    .contact-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:56px; align-items:start; }
+    @media (max-width:768px) { .contact-grid{grid-template-columns:1fr;gap:32px;} }
+    .contact-big { font-family:'Syne',sans-serif; font-size:clamp(1.75rem,5vw,2.75rem); font-weight:800; letter-spacing:-0.04em; color:var(--ink); line-height:1.1; margin-bottom:14px; }
+    .contact-big .hi { color:var(--accent); }
+    .contact-chips { display:flex; flex-direction:column; gap:10px; }
+    .cchip { display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:12px; border:1px solid var(--border); background:var(--surface-2); text-decoration:none; color:var(--ink); transition:border-color 0.2s,background 0.2s,transform 0.18s; }
+    .cchip:hover { border-color:var(--border-2); background:var(--surface-3); transform:translateX(4px); }
+    .cicon { width:32px; height:32px; border-radius:8px; background:var(--surface-3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--ink-muted); }
+    .clabel { font-family:'Geist',sans-serif; font-size:0.69rem; font-weight:400; color:var(--ink-muted); }
+    .cval { font-family:'Geist',sans-serif; font-size:0.84rem; font-weight:500; color:var(--ink); }
+
+    /* ── FOOTER ── */
+    footer { border-top:1px solid var(--border); padding:26px 24px; }
+    .footer-inner { max-width:1080px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .footer-logo { font-family:'Syne',sans-serif; font-weight:700; font-size:0.875rem; letter-spacing:-0.02em; color:var(--ink-muted); }
+    .footer-copy { font-family:'JetBrains Mono',monospace; font-size:0.62rem; color:var(--ink-faint); letter-spacing:0.06em; }
+
+    /* ── REVEAL ── */
+    .reveal { opacity:0; transform:translateY(18px); transition:opacity 0.65s cubic-bezier(0.16,1,0.3,1),transform 0.65s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.up { opacity:1; transform:translateY(0); }
+    .d1{transition-delay:0.08s} .d2{transition-delay:0.16s} .d3{transition-delay:0.24s} .d4{transition-delay:0.32s} .d5{transition-delay:0.4s}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">SS.</a>
+    <div class="nav-links">
+      <a href="#about" class="nav-link">About</a>
+      <a href="#skills" class="nav-link">Skills</a>
+      <a href="#projects" class="nav-link">Projects</a>
+      <a href="#experience" class="nav-link">Experience</a>
+      <a href="#contact" class="nav-link">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <button id="theme-toggle" aria-label="Toggle theme">
+        <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button id="hamburger" aria-label="Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div id="mobile-menu">
+  <button id="close-menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  <a href="#about" class="nav-link">About</a>
+  <a href="#skills" class="nav-link">Skills</a>
+  <a href="#projects" class="nav-link">Projects</a>
+  <a href="#experience" class="nav-link">Experience</a>
+  <a href="#contact" class="nav-link">Contact</a>
+</div>
+
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-dots"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="hero-content">
+    <div class="badge reveal">
+      <span class="badge-dot"></span>
+      Available for new opportunities
+    </div>
+    <h1 class="hero-name reveal d1">
+      Saket<br><span class="hi">Sourav</span>
+    </h1>
+    <p class="hero-role reveal d2">Fullstack Developer &nbsp;·&nbsp; Frontend Focus</p>
+    <p class="hero-tagline reveal d3">
+      I build fast, clean and user-focused web experiences — where every pixel and every millisecond counts.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;" class="reveal d4">
+      <a href="#projects" class="btn-p">
+        View Work
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="#contact" class="btn-g">Get in touch</a>
+    </div>
+  </div>
+
+  <div class="scroll-cue reveal d5">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:0.59rem;letter-spacing:0.1em;color:var(--ink-faint);">SCROLL</span>
+    <div style="width:1px;height:26px;background:linear-gradient(to bottom,var(--ink-faint),transparent);"></div>
+  </div>
+</section>
+
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="wrap">
+    <div class="about-grid">
+      <div class="reveal">
+        <p class="eyebrow">About</p>
+        <h2 class="stitle">Crafting interfaces that feel inevitable.</h2>
+        <div class="stat-row">
+          <div class="stat-card"><div class="stat-num">10+</div><div class="stat-label">Projects shipped</div></div>
+          <div class="stat-card"><div class="stat-num">2+</div><div class="stat-label">Years building</div></div>
+          <div class="stat-card"><div class="stat-num">∞</div><div class="stat-label">Tabs open</div></div>
+        </div>
+      </div>
+      <div class="reveal d2">
+        <p class="about-lead">Frontend-first, full-stack in practice — I care deeply about the craft of building digital products that work beautifully.</p>
+        <p class="about-body">My approach leans heavily into UI/UX thinking. Whitespace is intentional, interactions are considered, and performance is a feature — not an afterthought. I measure success in load times, Lighthouse scores, and whether a user smiles or squints.</p>
+        <p class="about-body">Whether it's architecting a React application, fine-tuning a Tailwind layout, or optimising a Node.js API, I bring the same standard: clean code, maintainable structure, and an eye for the details that separate good from great.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep"/>
+
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="eyebrow">Skills</p>
+      <h2 class="stitle">What I work with.</h2>
+      <p class="ssub">A toolkit shaped by building real products for real users.</p>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-group reveal d1">
+        <p class="sg-name">Languages</p>
+        <div class="pill-row">
+          <span class="pill">JavaScript (ES6+)</span><span class="pill">TypeScript</span><span class="pill">Core Java</span><span class="pill">Go (Basic)</span>
+        </div>
+      </div>
+      <div class="skill-group reveal d2">
+        <p class="sg-name">Frontend</p>
+        <div class="pill-row">
+          <span class="pill">React.js</span><span class="pill">Next.js</span><span class="pill">HTML5</span><span class="pill">CSS3</span><span class="pill">Tailwind CSS</span><span class="pill">UI/UX Design</span>
+        </div>
+      </div>
+      <div class="skill-group reveal d3">
+        <p class="sg-name">Backend</p>
+        <div class="pill-row">
+          <span class="pill">Node.js</span><span class="pill">Express.js</span><span class="pill">REST APIs</span>
+        </div>
+      </div>
+      <div class="skill-group reveal d1">
+        <p class="sg-name">Database</p>
+        <div class="pill-row">
+          <span class="pill">MongoDB</span><span class="pill">MySQL</span>
+        </div>
+      </div>
+      <div class="skill-group reveal d2" style="grid-column:span 2;">
+        <p class="sg-name">Tools & Practices</p>
+        <div class="pill-row">
+          <span class="pill">GitHub</span><span class="pill">Jira</span><span class="pill">Figma</span><span class="pill">Netlify</span><span class="pill">Performance Optimization</span><span class="pill">CI/CD</span><span class="pill">Responsive Design</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep"/>
+
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="eyebrow">Projects</p>
+      <h2 class="stitle">Things I've built.</h2>
+      <p class="ssub">From booking platforms to developer tools — shipped with care.</p>
+    </div>
+
+    <p class="proj-cat reveal">Client Work</p>
+    <div class="proj-grid">
+
+      <div class="pcard reveal">
+        <div class="pthumb">
+          <!-- <img src="https://image.thum.io/get/width/800/https://antiquewhite-penguin-859287.hostingersite.com/" alt="Travel Story" loading="lazy"/> -->
+          <img src="https://image.thum.io/get/width/800/noanimate/https://antiquewhite-penguin-859287.hostingersite.com/" />
+          <span class="ptag wip">In Progress</span>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Travel Story</h3>
+          <p class="pdesc">Travel package booking & enquiry platform with a rich catalogue and a classic Indian aesthetic designed for high conversions.</p>
+          <a href="https://antiquewhite-penguin-859287.hostingersite.com/" target="_blank" class="plink">Visit Site ↗</a>
+        </div>
+      </div>
+
+      <div class="pcard reveal d1">
+        <div class="pthumb">
+          <img src="https://image.thum.io/get/width/800/https://aerofy.travel" alt="Aerofy" loading="lazy"/>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Aerofy & Orazio</h3>
+          <p class="pdesc">Full-scale travel booking covering flights, hotels, villas, and curated holiday packages — built for scale and speed.</p>
+          <a href="https://aerofy.travel" target="_blank" class="plink">Aerofy ↗</a>
+          <a href="https://theorazio.com" target="_blank" class="plink-g">Orazio ↗</a>
+        </div>
+      </div>
+
+      <div class="pcard reveal d2">
+        <div class="pthumb">
+          <img src="https://image.thum.io/get/width/800/https://thetravelarc.com/" alt="Travelarc" loading="lazy"/>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Travelarc</h3>
+          <p class="pdesc">Dark-themed travel reservation system optimised for speed, clarity, and a premium booking experience end-to-end.</p>
+          <a href="https://thetravelarc.com/" target="_blank" class="plink">Visit Site ↗</a>
+        </div>
+      </div>
+
+      <div class="pcard reveal">
+        <div class="pthumb">
+          <img src="https://image.thum.io/get/width/800/https://eurotripps.com/" alt="Eurotripps" loading="lazy"/>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Eurotripps</h3>
+          <p class="pdesc">Sky-blue themed flight & hotel booking platform with a clean, conversion-focused UI for European travel.</p>
+          <a href="https://eurotripps.com/" target="_blank" class="plink">Visit Site ↗</a>
+        </div>
+      </div>
+
+      <div class="pcard reveal d1">
+        <div class="pthumb">
+          <img src="https://image.thum.io/get/width/800/https://vibesolutions.com/" alt="Vibe Solutions" loading="lazy"/>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Vibe Solutions</h3>
+          <p class="pdesc">Enterprise ERP & HR payroll management system built for operational clarity across departments and roles.</p>
+          <a href="https://vibesolutions.com/" target="_blank" class="plink">Visit Site ↗</a>
+        </div>
+      </div>
+
+      <div class="pcard reveal d2">
+        <div class="pthumb" style="display:flex;align-items:center;justify-content:center;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-faint);">UAT / TEST ENV</span>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Opentrip <span style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--ink-faint);font-weight:400;">UAT</span></h3>
+          <p class="pdesc">Full travel booking system on UAT server for client QA and pre-launch stakeholder sign-off cycles.</p>
+          <a href="http://45.120.138.200:3005/" target="_blank" class="plink-g" style="margin-left:0;">UAT Link ↗</a>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="proj-cat reveal">Personal Projects</p>
+    <div class="proj-grid">
+
+      <div class="pcard reveal">
+        <div class="pthumb">
+          <img src="https://image.thum.io/get/width/800/https://backdrop-master-07.vercel.app/" alt="Backdrop Master" loading="lazy"/>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Backdrop Master</h3>
+          <p class="pdesc">Browser-based image editor with a precise "text behind image" effect, drag-and-drop canvas tools, and layer controls.</p>
+          <a href="https://backdrop-master-07.vercel.app/" target="_blank" class="plink">Launch App ↗</a>
+        </div>
+      </div>
+
+      <div class="pcard reveal d1">
+        <div class="pthumb">
+          <img src="https://image.thum.io/get/width/800/https://flexflow-css.netlify.app/" alt="FlexFlow CSS" loading="lazy"/>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">FlexFlow CSS</h3>
+          <p class="pdesc">Developer-friendly CSS utility framework with pre-built components, documentation, and an interactive playground.</p>
+          <a href="https://flexflow-css.netlify.app/" target="_blank" class="plink">Explore ↗</a>
+        </div>
+      </div>
+
+      <div class="pcard reveal d2">
+        <div class="pthumb">
+          <img src="https://image.thum.io/get/width/800/https://juspay-ui-dashboard.vercel.app" alt="Juspay Dashboard" loading="lazy"/>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Juspay Dashboard</h3>
+          <p class="pdesc">Clean analytics dashboard UI prototype in React + Vite — data-dense layouts with intuitive UX patterns.</p>
+          <a href="https://juspay-ui-dashboard.vercel.app" target="_blank" class="plink">Live Demo ↗</a>
+        </div>
+      </div>
+
+      <div class="pcard reveal">
+        <div class="pthumb" style="display:flex;align-items:center;justify-content:center;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink-faint);"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Fylam</h3>
+          <p class="pdesc">AI-powered document generation & editor studio — create, prompt, and refine structured documents end to end.</p>
+          <a href="https://github.com/Knightsaket007/Fylam" target="_blank" class="plink">GitHub ↗</a>
+        </div>
+      </div>
+
+      <div class="pcard reveal d1" style="grid-column:span 2;">
+        <div class="pthumb" style="display:flex;align-items:center;justify-content:center;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;color:var(--ink-faint);">UAT / TEST ENV</span>
+        </div>
+        <div class="pbody">
+          <h3 class="ptitle">Wolves International CRM <span style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--ink-faint);font-weight:400;">UAT</span></h3>
+          <p class="pdesc">Multi-role CRM with distinct admin, employee, and agent dashboards built for internal operations at scale.</p>
+          <a href="http://45.120.138.200/" target="_blank" class="plink-g" style="margin-left:0;">UAT Link ↗</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="sep"/>
+
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="eyebrow">Experience</p>
+      <h2 class="stitle">Where I've worked.</h2>
+    </div>
+    <div class="exp-list">
+
+      <div class="exp-item reveal d1">
+        <div class="exp-left"><div class="exp-dot"></div><div class="exp-line"></div></div>
+        <div class="exp-right">
+          <div class="exp-header"><span class="exp-title">Frontend Developer — Orazio & TDO</span><span class="exp-date">2023 – Present</span></div>
+          <p class="exp-desc">Led frontend architecture for two large-scale travel platforms. Owned product UI decisions, component system design, and performance tuning across complex multi-step booking flows. Worked directly with clients to translate business goals into production-ready interfaces that convert.</p>
+        </div>
+      </div>
+
+      <div class="exp-item reveal d2">
+        <div class="exp-left"><div class="exp-dot"></div><div class="exp-line"></div></div>
+        <div class="exp-right">
+          <div class="exp-header"><span class="exp-title">Fullstack Developer — Freelance Clients</span><span class="exp-date">Freelance</span></div>
+          <p class="exp-desc">Built and shipped end-to-end web products for clients across travel, ERP, and CRM domains. Owned everything from database schema to pixel-perfect frontend — with a consistent focus on responsive layouts, clean API design, and shipping on time without cutting corners on quality.</p>
+        </div>
+      </div>
+
+      <div class="exp-item reveal d3">
+        <div class="exp-left"><div class="exp-dot"></div><div class="exp-line"></div></div>
+        <div class="exp-right">
+          <div class="exp-header"><span class="exp-title">Open Source & Personal Projects</span><span class="exp-date">Ongoing</span></div>
+          <p class="exp-desc">Continuously building personal tools to sharpen my craft — from CSS frameworks to AI document editors. Each project is a chance to explore new patterns, push developer experience forward, and ship something genuinely worth using.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="sep"/>
+
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="wrap">
+    <div class="contact-grid">
+      <div class="reveal">
+        <p class="eyebrow">Contact</p>
+        <h2 class="contact-big">Let's build<br>something<br><span class="hi">great.</span></h2>
+        <p class="ssub" style="max-width:240px;">Open to freelance projects, full-time roles, and interesting conversations.</p>
+      </div>
+      <div class="contact-chips reveal d2">
+
+        <a href="mailto:saketsourav3@gmail.com" class="cchip">
+          <div class="cicon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+          <div><div class="clabel">Email</div><div class="cval">saketsourav3@gmail.com</div></div>
+        </a>
+
+        <a href="tel:+918427258749" class="cchip">
+          <div class="cicon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.4a16 16 0 0 0 6.29 6.29l.89-.89a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div><div class="clabel">Phone</div><div class="cval">+91 8427258749</div></div>
+        </a>
+
+        <a href="https://www.linkedin.com/in/saket-sourav-755115285" target="_blank" class="cchip">
+          <div class="cicon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></div>
+          <div><div class="clabel">LinkedIn</div><div class="cval">saket-sourav-755115285</div></div>
+        </a>
+
+        <a href="https://github.com/Knightsaket007" target="_blank" class="cchip">
+          <div class="cicon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></div>
+          <div><div class="clabel">GitHub</div><div class="cval">Knightsaket007</div></div>
+        </a>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-logo">Saket Sourav</span>
+    <span class="footer-copy">© 2025 · DESIGNED & BUILT WITH PRECISION</span>
+  </div>
+</footer>
+
+
+<script>
+  // THEME
+  const html = document.documentElement;
+  function applyTheme(dark) {
+    html.classList.toggle('dark', dark);
+    document.getElementById('icon-sun').style.display = dark ? 'block' : 'none';
+    document.getElementById('icon-moon').style.display = dark ? 'none' : 'block';
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }
+  const saved = localStorage.getItem('theme');
+  applyTheme(saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches));
+  document.getElementById('theme-toggle').addEventListener('click', () => applyTheme(!html.classList.contains('dark')));
+
+  // MOBILE MENU
+  const mm = document.getElementById('mobile-menu');
+  document.getElementById('hamburger').addEventListener('click', () => mm.classList.add('open'));
+  document.getElementById('close-menu').addEventListener('click', () => mm.classList.remove('open'));
+  mm.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', () => mm.classList.remove('open')));
+
+  // REVEAL
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('up'); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -32px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('#hero .reveal').forEach((el, i) => {
+        setTimeout(() => el.classList.add('up'), i * 90);
+      });
+    }, 80);
+  });
+
+  // SMOOTH SCROLL
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+</script>
+</body>
+</html>
